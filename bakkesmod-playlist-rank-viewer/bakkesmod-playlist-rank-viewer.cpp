@@ -12,9 +12,10 @@ void PlaylistRankViewer::log(std::string str) {
 }
 
 void PlaylistRankViewer::onLoad() {
-	log("PlaylistRankViewer loaded");
 	cvarManager->registerCvar(enabledName, "1", "Show ranks from competitive playlists", true, true, 0, true, 1, true);
 	gameWrapper->RegisterDrawable(std::bind(&PlaylistRankViewer::render, this, std::placeholders::_1));
+	
+	// Show the next users MMR stats
 	cvarManager->registerNotifier(nextPlayerName, [self = this](vector<string>) {
 		ServerWrapper server = self->gameWrapper->GetOnlineGame();
 		if (!server.IsNull()) {
@@ -35,6 +36,7 @@ void PlaylistRankViewer::onUnload() {
 	playerMmrs.clear();
 }
 
+// Update the MMR map for the user if it isnt updated yet
 void PlaylistRankViewer::updatePlayerMmr(SteamID id) {
 	MMRWrapper mmr = gameWrapper->GetMMRWrapper();
 	long long steamId = id.ID;
@@ -54,14 +56,18 @@ void PlaylistRankViewer::writeStats(CanvasWrapper& canvas, long long uniqueId, s
 	float tableX = nameX;
 	float tableY = nameY + 50.0;
 
+	// Draw a box for the stats to go into
 	canvas.SetColor(100, 100, 100, 150);
 	canvas.SetPosition(Vector2{int(nameX - 10), int(nameY - 10)});
+	// Estimating the required width and height of the box
 	canvas.FillBox(Vector2{int(210), int(70 + (20 * playlistsToCheck.size()))});
 
+	// First draw the players name at the top
 	canvas.SetColor(230, 230, 230, 255);
 	canvas.SetPosition(Vector2{int(nameX), int(nameY)});
 	canvas.DrawString(playerName);
 
+	// For each playlist, draw that playlists stats 20 pixels below the previous row
 	for (int i = 0; i < playlistsToCheck.size(); i++) {
 		PLAYLIST playlist = playlistsToCheck[i];
 		canvas.SetPosition(Vector2{int(tableX) , int(tableY + (20 * i))});
@@ -70,6 +76,7 @@ void PlaylistRankViewer::writeStats(CanvasWrapper& canvas, long long uniqueId, s
 }
 
 void PlaylistRankViewer::render(CanvasWrapper canvas) {
+	// Only render if the plugin is enabled
 	if (!cvarManager->getCvar(enabledName).getBoolValue()) {
 		return;
 	}
@@ -78,9 +85,11 @@ void PlaylistRankViewer::render(CanvasWrapper canvas) {
 		ServerWrapper server = gameWrapper->GetOnlineGame();
 
 		if (server.GetPRIs().Count() != 0) {
+			// Make sure all players have their MMR updated if they werent in the map already
 			for (int i = 0; i < server.GetPRIs().Count(); i++) {
 				updatePlayerMmr(server.GetPRIs().Get(i).GetUniqueId());
 			}
+			// Write the stats of the current player
 			if (currentPlayer >= 0 && currentPlayer < server.GetPRIs().Count()) {
 				PriWrapper pri = server.GetPRIs().Get(currentPlayer);
 				writeStats(canvas, pri.GetUniqueId().ID, pri.GetPlayerName().ToString());
@@ -88,6 +97,7 @@ void PlaylistRankViewer::render(CanvasWrapper canvas) {
 		}
 	}
 	else {
+		// If we arent in a game, empty the map and just include our own stats
 		map<PLAYLIST, float> oldMmr = playerMmrs[gameWrapper->GetSteamID()];
 		playerMmrs.clear();
 		playerMmrs[gameWrapper->GetSteamID()] = oldMmr;
