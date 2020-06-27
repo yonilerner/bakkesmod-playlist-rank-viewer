@@ -33,6 +33,9 @@ public:
 	virtual void onLoad();
 	virtual void onUnload();
 
+	bool isEnabled();
+	void setEnabled(bool enabled);
+
 	void log(string str);
 	void render(CanvasWrapper canvas);
 	void updatePlayerMmr(SteamID id);
@@ -40,4 +43,5 @@ public:
 
 	map<long long, map<PLAYLIST, float>> playerMmrs = {};
 	int currentPlayer = 0;
+	shared_ptr<bool> enabled = make_shared<bool>(true);
 };

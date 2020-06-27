@@ -3,8 +3,12 @@
 BAKKESMOD_PLUGIN(PlaylistRankViewer, "Playlist Rank Viewer", "1.0", 0)
 
 string prefix = "playlist_rank_viewer_";
+
 string enabledName = prefix + "enabled";
+string enabledBinding = "LeftShift+N";
+
 string nextPlayerName = prefix + "next_player";
+string nextPlayerBinding = "N";
 
 
 void PlaylistRankViewer::log(std::string str) {
@@ -12,11 +16,25 @@ void PlaylistRankViewer::log(std::string str) {
 }
 
 void PlaylistRankViewer::onLoad() {
-	cvarManager->registerCvar(enabledName, "1", "Show ranks from competitive playlists", true, true, 0, true, 1, true);
-	gameWrapper->RegisterDrawable(std::bind(&PlaylistRankViewer::render, this, std::placeholders::_1));
+	cvarManager->registerCvar(enabledName, "1", "Show ranks from competitive playlists", true, true, 0, true, 1, true)
+		.addOnValueChanged([self = this](string oldValue, CVarWrapper cvar) {
+			self->setEnabled(oldValue == "0");
+		});
+	cvarManager->registerNotifier(enabledName, [self = this](vector<string>) {
+		self->setEnabled(!self->isEnabled());
+		self->cvarManager->getCvar(enabledName).setValue(self->isEnabled());
+	}, "Toggle plguin", PERMISSION_ALL);
+
+	cvarManager->setBind(enabledBinding, enabledName);
+	cvarManager->setBind(nextPlayerBinding, nextPlayerName);
+
+	gameWrapper->RegisterDrawable(std::bind(&PlaylistRankViewer::render, this, placeholders::_1));
 	
 	// Show the next users MMR stats
 	cvarManager->registerNotifier(nextPlayerName, [self = this](vector<string>) {
+		if (!self->isEnabled()) {
+			return;
+		}
 		ServerWrapper server = self->gameWrapper->GetOnlineGame();
 		if (!server.IsNull()) {
 			self->log("player is " + to_string(self->currentPlayer) + ", total players: " + to_string(server.GetPRIs().Count()));
@@ -77,7 +95,7 @@ void PlaylistRankViewer::writeStats(CanvasWrapper& canvas, long long uniqueId, s
 
 void PlaylistRankViewer::render(CanvasWrapper canvas) {
 	// Only render if the plugin is enabled
-	if (!cvarManager->getCvar(enabledName).getBoolValue()) {
+	if (!isEnabled()) {
 		return;
 	}
 
@@ -104,4 +122,12 @@ void PlaylistRankViewer::render(CanvasWrapper canvas) {
 		updatePlayerMmr({gameWrapper->GetSteamID()});
 		writeStats(canvas, gameWrapper->GetSteamID(), "You");
 	}
+}
+
+bool PlaylistRankViewer::isEnabled() {
+	return *enabled;
+}
+
+void PlaylistRankViewer::setEnabled(bool enabled) {
+	this->enabled = make_shared<bool>(enabled);
 }
