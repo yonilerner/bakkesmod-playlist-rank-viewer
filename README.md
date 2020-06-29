@@ -9,7 +9,7 @@ Looks something like:
 - Open the Bakkesmod Injector and click File -> Open Bakkesmod folder
 - Copy `PlaylistRankViewerPlugin.dll` into the `plugins` folder and `playlistrankviewerplugin.set` into the `plugins/settings` folder
 - Open the `cfg/plugins.cfg` file and add a new line to it: `plugin load playlistrankviewerplugin` and save it
-Or watch [Rocket Science's great video on how to install plugins)[https://www.youtube.com/watch?v=B0tbKsWlzvk]
+Or watch [Rocket Science's great video on how to install plugins](https://www.youtube.com/watch?v=B0tbKsWlzvk)
 
 # Usage
 - Shift+N toggles the plugin
