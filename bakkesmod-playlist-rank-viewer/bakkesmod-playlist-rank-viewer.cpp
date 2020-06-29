@@ -1,6 +1,6 @@
 #include "bakkesmod-playlist-rank-viewer.h"
 
-BAKKESMOD_PLUGIN(PlaylistRankViewer, "Playlist Rank Viewer", "1.0", 0)
+BAKKESMOD_PLUGIN(PlaylistRankViewer, "Playlist Rank Viewer", "1.1", 0)
 
 string prefix = "playlist_rank_viewer_";
 
@@ -19,6 +19,10 @@ void PlaylistRankViewer::onLoad() {
 	cvarManager->registerCvar(enabledName, "1", "Show ranks from competitive playlists", true, true, 0, true, 1, true)
 		.addOnValueChanged([self = this](string oldValue, CVarWrapper cvar) {
 			self->setEnabled(oldValue == "0");
+			if (self->isEnabled()) {
+				// Reset MMR cache when the setting is enabled
+				self->resetMmrCache();
+			}
 		});
 	cvarManager->registerNotifier(enabledName, [self = this](vector<string>) {
 		self->setEnabled(!self->isEnabled());
@@ -47,6 +51,12 @@ void PlaylistRankViewer::onLoad() {
 			self->log("player is now " + to_string(self->currentPlayer));
 		}
 	}, "View next player in the match", PERMISSION_ONLINE);
+
+	gameWrapper->SetTimeout([self = this](GameWrapper* gw) {
+		// Every 30s reset the entire MMR cache
+		self->resetMmrCache();
+	}, 30);
+	this->resetMmrCache();
 }
 
 void PlaylistRankViewer::onUnload() {
@@ -115,13 +125,14 @@ void PlaylistRankViewer::render(CanvasWrapper canvas) {
 		}
 	}
 	else {
-		// If we arent in a game, empty the map and just include our own stats
-		map<PLAYLIST, float> oldMmr = playerMmrs[gameWrapper->GetSteamID()];
-		playerMmrs.clear();
-		playerMmrs[gameWrapper->GetSteamID()] = oldMmr;
-		updatePlayerMmr({gameWrapper->GetSteamID()});
 		writeStats(canvas, gameWrapper->GetSteamID(), "You");
 	}
+}
+
+void PlaylistRankViewer::resetMmrCache() {
+	playerMmrs.clear();
+	updatePlayerMmr({ gameWrapper->GetSteamID() });
+	log("Refreshed all MMRs");
 }
 
 bool PlaylistRankViewer::isEnabled() {

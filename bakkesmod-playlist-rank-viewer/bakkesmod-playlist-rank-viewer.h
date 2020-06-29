@@ -40,6 +40,7 @@ public:
 	void render(CanvasWrapper canvas);
 	void updatePlayerMmr(SteamID id);
 	void writeStats(CanvasWrapper& canvas, long long uniqueId, string playerName);
+	void resetMmrCache();
 
 	map<long long, map<PLAYLIST, float>> playerMmrs = {};
 	int currentPlayer = 0;
