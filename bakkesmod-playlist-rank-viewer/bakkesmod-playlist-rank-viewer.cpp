@@ -12,7 +12,7 @@ string nextPlayerBinding = "N";
 
 
 void PlaylistRankViewer::log(std::string str) {
-	cvarManager->log("******************* " + str);
+	cvarManager->log(str);
 }
 
 void PlaylistRankViewer::onLoad() {
@@ -52,11 +52,17 @@ void PlaylistRankViewer::onLoad() {
 		}
 	}, "View next player in the match", PERMISSION_ONLINE);
 
-	gameWrapper->SetTimeout([self = this](GameWrapper* gw) {
-		// Every 30s reset the entire MMR cache
-		self->resetMmrCache();
-	}, 30);
+	gameWrapper->SetTimeout([self = this](GameWrapper *gw) {
+		self->timeoutCallback(gw);
+	}, 0);
+}
+
+float callbackEvery = 30;
+void PlaylistRankViewer::timeoutCallback(GameWrapper* _) {
 	this->resetMmrCache();
+	gameWrapper->SetTimeout([self = this](GameWrapper *gw) {
+		self->timeoutCallback(gw);
+	}, callbackEvery);
 }
 
 void PlaylistRankViewer::onUnload() {
