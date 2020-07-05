@@ -1,6 +1,6 @@
 #include "bakkesmod-playlist-rank-viewer.h"
 
-BAKKESMOD_PLUGIN(PlaylistRankViewer, "Playlist Rank Viewer", "1.1", 0)
+BAKKESMOD_PLUGIN(PlaylistRankViewer, "Playlist Rank Viewer", "1.2", 0)
 
 string prefix = "playlist_rank_viewer_";
 
@@ -24,6 +24,15 @@ void PlaylistRankViewer::onLoad() {
 				self->resetMmrCache();
 			}
 		});
+
+	// Apparently this wont run unless it happens a bit later
+	gameWrapper->SetTimeout([self = this](GameWrapper *gw) {
+		self->log("enabled: " + to_string(self->cvarManager->getCvar(enabledName).getBoolValue()));
+		if (self->cvarManager->getCvar(enabledName).getBoolValue()) {
+			self->setEnabled(true);
+		}
+	}, 5);
+
 	cvarManager->registerNotifier(enabledName, [self = this](vector<string>) {
 		self->setEnabled(!self->isEnabled());
 		self->cvarManager->getCvar(enabledName).setValue(self->isEnabled());
@@ -72,12 +81,14 @@ void PlaylistRankViewer::onUnload() {
 
 // Update the MMR map for the user if it isnt updated yet
 void PlaylistRankViewer::updatePlayerMmr(SteamID id) {
-	MMRWrapper mmr = gameWrapper->GetMMRWrapper();
+	MMRWrapper mmrWrapper = gameWrapper->GetMMRWrapper();
 	long long steamId = id.ID;
 	if (playerMmrs.count(steamId) == 0 || playerMmrs[steamId].size() == 0) {
 		playerMmrs[steamId] = {};
 		for (auto playlist : playlistsToCheck) {
-			playerMmrs[steamId][playlist] = mmr.GetPlayerMMR(id, playlist);
+			string mmr = to_string(mmrWrapper.GetPlayerMMR(id, playlist));
+			string gamesPlayed = to_string(mmrWrapper.GetPlayerRank(id, playlist).MatchesPlayed);
+			playerMmrs[steamId][playlist] = mmr + " (" + gamesPlayed + ")";
 		}
 	}
 }
@@ -94,7 +105,7 @@ void PlaylistRankViewer::writeStats(CanvasWrapper& canvas, long long uniqueId, s
 	canvas.SetColor(100, 100, 100, 150);
 	canvas.SetPosition(Vector2{int(nameX - 10), int(nameY - 10)});
 	// Estimating the required width and height of the box
-	canvas.FillBox(Vector2{int(210), int(70 + (20 * playlistsToCheck.size()))});
+	canvas.FillBox(Vector2{int(240), int(70 + (20 * playlistsToCheck.size()))});
 
 	// First draw the players name at the top
 	canvas.SetColor(230, 230, 230, 255);
@@ -105,7 +116,7 @@ void PlaylistRankViewer::writeStats(CanvasWrapper& canvas, long long uniqueId, s
 	for (int i = 0; i < playlistsToCheck.size(); i++) {
 		PLAYLIST playlist = playlistsToCheck[i];
 		canvas.SetPosition(Vector2{int(tableX) , int(tableY + (20 * i))});
-		canvas.DrawString(playlistNames[playlist] + " - " + to_string(playerMmrs[uniqueId][playlist]));
+		canvas.DrawString(playlistNames[playlist] + " - " + playerMmrs[uniqueId][playlist]);
 	}
 }
 

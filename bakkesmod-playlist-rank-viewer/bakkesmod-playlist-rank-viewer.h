@@ -43,7 +43,7 @@ public:
 	void resetMmrCache();
 	void timeoutCallback(GameWrapper* gw);
 
-	map<long long, map<PLAYLIST, float>> playerMmrs = {};
+	map<long long, map<PLAYLIST, string>> playerMmrs = {};
 	int currentPlayer = 0;
 	shared_ptr<bool> enabled = make_shared<bool>(true);
 };
