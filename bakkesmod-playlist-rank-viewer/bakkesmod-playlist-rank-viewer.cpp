@@ -1,4 +1,11 @@
 #include "bakkesmod-playlist-rank-viewer.h"
+#include "pch.h"
+#include "Enums.h"
+#include "RankAndPlaylistData.h"
+#include <iomanip>
+#include <sstream>
+#include <math.h>
+#include <string>
 
 BAKKESMOD_PLUGIN(PlaylistRankViewer, "Playlist Rank Viewer", "1.2", 0)
 
@@ -76,22 +83,53 @@ void PlaylistRankViewer::timeoutCallback(GameWrapper* _) {
 
 void PlaylistRankViewer::onUnload() {
 	currentPlayer = 0;
-	playerMmrs.clear();
+	playerStats.clear();
 }
 
-// Update the MMR map for the user if it isnt updated yet
-void PlaylistRankViewer::updatePlayerMmr(UniqueIDWrapper uniqueId) {
+string FixedFloat(float val, int len) {
+	std::ostringstream oss;
+
+	oss << std::fixed << std::setprecision(len) << val;
+
+	return oss.str();
+}
+
+string GetRankName(int rank, int div) {
+	if (rank < 0 || rank > 19) {
+		return "ERROR";
+	} else {
+		RANK realRank = (RANK)(rank);
+		std::string rankName = RankTiersAbrv[realRank];
+
+		if (rank != RANK::Unranked && rank != RANK::SupersonicLegend)
+			rankName += ".D" + to_string(div + 1);
+
+		return rankName;
+	}
+}
+
+// Update the MMR/Rank data and map for the user if it isnt updated yet
+void PlaylistRankViewer::updatePlayerStats(UniqueIDWrapper uniqueId) {
 	MMRWrapper mmrWrapper = gameWrapper->GetMMRWrapper();
 
 	long long uID = uniqueId.GetUID();
 
-	// long long steamId = id.ID;
-	if (playerMmrs.count(uID) == 0 || playerMmrs[uID].size() == 0) {
-		playerMmrs[uID] = {};
+	if (playerStats.count(uID) == 0 || playerStats[uID].size() == 0) {
+		playerStats[uID] = {};
+
 		for (auto playlist : playlistsToCheck) {
-			string mmr = to_string(mmrWrapper.GetPlayerMMR(uniqueId, playlist));
-			string gamesPlayed = to_string(mmrWrapper.GetPlayerRank(uniqueId, playlist).MatchesPlayed);
-			playerMmrs[uID][playlist] = mmr + " (" + gamesPlayed + ")";
+			// The SkillRank has information about the players rank
+			SkillRank userRank = mmrWrapper.GetPlayerRank(uniqueId, playlist);
+
+			string mmr = FixedFloat(mmrWrapper.GetPlayerMMR(uniqueId, playlist), 1);
+			string gamesPlayed = to_string(userRank.MatchesPlayed);
+			string currentRankName = GetRankName(userRank.Tier, userRank.Division);
+
+			if (playlist != PLAYLIST::UNRANKED) {
+				playerStats[uID][playlist] = currentRankName + ", ";
+			}
+
+			playerStats[uID][playlist] += mmr + " (" + gamesPlayed + ")";
 		}
 	}
 }
@@ -120,7 +158,7 @@ void PlaylistRankViewer::writeStats(CanvasWrapper& canvas, UniqueIDWrapper uniqu
 	for (int i = 0; i < playlistsToCheck.size(); i++) {
 		PLAYLIST playlist = playlistsToCheck[i];
 		canvas.SetPosition(Vector2{int(tableX) , int(tableY + (20 * i))});
-		canvas.DrawString(playlistNames[playlist] + " - " + playerMmrs[uID][playlist]);
+		canvas.DrawString(playlistNames[playlist] + " - " + playerStats[uID][playlist]);
 	}
 }
 
@@ -136,7 +174,7 @@ void PlaylistRankViewer::render(CanvasWrapper canvas) {
 		if (server.GetPRIs().Count() != 0) {
 			// Make sure all players have their MMR updated if they werent in the map already
 			for (int i = 0; i < server.GetPRIs().Count(); i++) {
-				updatePlayerMmr(server.GetPRIs().Get(i).GetUniqueIdWrapper());
+				updatePlayerStats(server.GetPRIs().Get(i).GetUniqueIdWrapper());
 			}
 			// Write the stats of the current player
 			if (currentPlayer >= 0 && currentPlayer < server.GetPRIs().Count()) {
@@ -151,8 +189,8 @@ void PlaylistRankViewer::render(CanvasWrapper canvas) {
 }
 
 void PlaylistRankViewer::resetMmrCache() {
-	playerMmrs.clear();
-	updatePlayerMmr({ gameWrapper->GetUniqueID() });
+	playerStats.clear();
+	updatePlayerStats({ gameWrapper->GetUniqueID() });
 	log("Refreshed all MMRs");
 }
 
