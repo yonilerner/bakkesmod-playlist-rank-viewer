@@ -156,7 +156,7 @@
       <AdditionalLibraryDirectories>C:\Program Files (x86)\Steam\steamapps\common\rocketleague\Binaries\Win64\bakkesmod\bakkesmodsdk\lib</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>python3 "C:\Users\Yoni\code\bakkesmod-playlist-rank-viewer-vs\bakkesmod-playlist-rank-viewer\bakkes_patchplugin.py" "$(TargetPath)"</Command>
+      <Command>python3 "$(ProjectDir)..\bakkes_patchplugin.py" "$(TargetPath)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
