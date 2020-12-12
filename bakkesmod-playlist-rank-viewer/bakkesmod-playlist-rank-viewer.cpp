@@ -152,7 +152,7 @@ void PlaylistRankViewer::render(CanvasWrapper canvas) {
 
 void PlaylistRankViewer::resetMmrCache() {
 	playerMmrs.clear();
-	updatePlayerMmr(gameWrapper->GetUniqueID());
+	updatePlayerMmr({ gameWrapper->GetUniqueID() });
 	log("Refreshed all MMRs");
 }
 
