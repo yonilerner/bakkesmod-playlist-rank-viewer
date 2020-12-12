@@ -80,26 +80,30 @@ void PlaylistRankViewer::onUnload() {
 }
 
 // Update the MMR map for the user if it isnt updated yet
-void PlaylistRankViewer::updatePlayerMmr(SteamID id) {
+void PlaylistRankViewer::updatePlayerMmr(UniqueIDWrapper uniqueId) {
 	MMRWrapper mmrWrapper = gameWrapper->GetMMRWrapper();
-	long long steamId = id.ID;
-	if (playerMmrs.count(steamId) == 0 || playerMmrs[steamId].size() == 0) {
-		playerMmrs[steamId] = {};
+
+	long long uID = uniqueId.GetUID();
+
+	// long long steamId = id.ID;
+	if (playerMmrs.count(uID) == 0 || playerMmrs[uID].size() == 0) {
+		playerMmrs[uID] = {};
 		for (auto playlist : playlistsToCheck) {
-			string mmr = to_string(mmrWrapper.GetPlayerMMR(id, playlist));
-			string gamesPlayed = to_string(mmrWrapper.GetPlayerRank(id, playlist).MatchesPlayed);
-			playerMmrs[steamId][playlist] = mmr + " (" + gamesPlayed + ")";
+			string mmr = to_string(mmrWrapper.GetPlayerMMR(uniqueId, playlist));
+			string gamesPlayed = to_string(mmrWrapper.GetPlayerRank(uniqueId, playlist).MatchesPlayed);
+			playerMmrs[uID][playlist] = mmr + " (" + gamesPlayed + ")";
 		}
 	}
 }
 
-void PlaylistRankViewer::writeStats(CanvasWrapper& canvas, long long uniqueId, string playerName) {
+void PlaylistRankViewer::writeStats(CanvasWrapper& canvas, UniqueIDWrapper uniqueId, string playerName) {
 	Vector2 screen = canvas.GetSize();
 	
 	float nameX = screen.X * .85;
 	float nameY = screen.Y * .1;
 	float tableX = nameX;
 	float tableY = nameY + 50.0;
+	long long uID = uniqueId.GetUID();
 
 	// Draw a box for the stats to go into
 	canvas.SetColor(100, 100, 100, 150);
@@ -116,7 +120,7 @@ void PlaylistRankViewer::writeStats(CanvasWrapper& canvas, long long uniqueId, s
 	for (int i = 0; i < playlistsToCheck.size(); i++) {
 		PLAYLIST playlist = playlistsToCheck[i];
 		canvas.SetPosition(Vector2{int(tableX) , int(tableY + (20 * i))});
-		canvas.DrawString(playlistNames[playlist] + " - " + playerMmrs[uniqueId][playlist]);
+		canvas.DrawString(playlistNames[playlist] + " - " + playerMmrs[uID][playlist]);
 	}
 }
 
@@ -132,23 +136,23 @@ void PlaylistRankViewer::render(CanvasWrapper canvas) {
 		if (server.GetPRIs().Count() != 0) {
 			// Make sure all players have their MMR updated if they werent in the map already
 			for (int i = 0; i < server.GetPRIs().Count(); i++) {
-				updatePlayerMmr(server.GetPRIs().Get(i).GetUniqueId());
+				updatePlayerMmr(server.GetPRIs().Get(i).GetUniqueIdWrapper());
 			}
 			// Write the stats of the current player
 			if (currentPlayer >= 0 && currentPlayer < server.GetPRIs().Count()) {
 				PriWrapper pri = server.GetPRIs().Get(currentPlayer);
-				writeStats(canvas, pri.GetUniqueId().ID, pri.GetPlayerName().ToString());
+				writeStats(canvas, pri.GetUniqueIdWrapper(), pri.GetPlayerName().ToString());
 			}
 		}
 	}
 	else {
-		writeStats(canvas, gameWrapper->GetSteamID(), "You");
+		writeStats(canvas, gameWrapper->GetUniqueID(), "You");
 	}
 }
 
 void PlaylistRankViewer::resetMmrCache() {
 	playerMmrs.clear();
-	updatePlayerMmr({ gameWrapper->GetSteamID() });
+	updatePlayerMmr(gameWrapper->GetUniqueID());
 	log("Refreshed all MMRs");
 }
 
