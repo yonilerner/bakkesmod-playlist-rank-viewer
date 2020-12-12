@@ -8,7 +8,7 @@ using namespace std;
 
 enum PLAYLIST {
 	UNRANKED = 1, //doesn't always work but will when in game, might take a player swap for it to update to the correct mmr
-	ONES = 10,
+	SOLO = 10,
 	TWOS = 11,
 	THREES = 13,
 	HOOPS = 27,
@@ -19,7 +19,7 @@ enum PLAYLIST {
 };
 map<PLAYLIST, string> playlistNames = {
 	{UNRANKED, "Unranked"},
-	{ONES, "Ones"},
+	{SOLO, "Solo"},
 	{TWOS, "Doubles"},
 	{THREES, "Standard"},
 	{HOOPS, "Hoops"},
@@ -28,7 +28,7 @@ map<PLAYLIST, string> playlistNames = {
 	{SNOWDAY, "Snowday"},
 	{TOURNAMENT, "Tournament"}
 };
-array<PLAYLIST, 9> playlistsToCheck = { UNRANKED, ONES, TWOS, THREES, HOOPS, RUMBLE, DROPSHOT, SNOWDAY, TOURNAMENT };
+array<PLAYLIST, 9> playlistsToCheck = { UNRANKED, SOLO, TWOS, THREES, HOOPS, RUMBLE, DROPSHOT, SNOWDAY, TOURNAMENT };
 
 class PlaylistRankViewer : public BakkesMod::Plugin::BakkesModPlugin {
 public:
