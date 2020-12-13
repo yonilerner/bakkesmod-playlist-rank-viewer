@@ -6,7 +6,7 @@
 #include <sstream>
 #include <string>
 
-BAKKESMOD_PLUGIN(PlaylistRankViewer, "Playlist Rank Viewer", "1.2", 0)
+BAKKESMOD_PLUGIN(PlaylistRankViewer, "Playlist Rank Viewer", "1.3", 0)
 
 string prefix = "playlist_rank_viewer_";
 
