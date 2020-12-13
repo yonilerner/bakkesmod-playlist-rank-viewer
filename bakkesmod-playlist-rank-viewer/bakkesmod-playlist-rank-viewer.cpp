@@ -1,10 +1,8 @@
 #include "bakkesmod-playlist-rank-viewer.h"
-#include "pch.h"
 #include "Enums.h"
 #include "RankAndPlaylistData.h"
 #include <iomanip>
 #include <sstream>
-#include <string>
 
 BAKKESMOD_PLUGIN(PlaylistRankViewer, "Playlist Rank Viewer", "1.3", 0)
 

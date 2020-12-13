@@ -1,11 +1,11 @@
 #pragma once
 
-#include "pch.h"
 #include "Enums.h"
+#include <array>
 
 struct Color { int r, g, b; };
-struct PlayerStatStruct { Color color; std::string text; };
-struct RankInfo { Color color; std::string name; };
+struct PlayerStatStruct { Color color; string text; };
+struct RankInfo { Color color; string name; };
 
 map<PLAYLIST, string> playlistNames = {
 	{UNRANKED, "Casual"},

@@ -1,6 +1,9 @@
 #pragma once
 #pragma comment( lib, "pluginsdk.lib" )
-#include "pch.h"
+
+using namespace std;
+
+#include "bakkesmod/plugin/bakkesmodplugin.h"
 #include "Enums.h"
 #include "RankAndPlaylistData.h"
 
