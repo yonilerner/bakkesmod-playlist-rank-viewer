@@ -27,7 +27,7 @@ Example showing each tier highlight color:
 ![playlist rank tier highlights](https://i.imgur.com/q0ZbMqH.png)
 
 Settings menu  
-![BakkesMod plugin settings](blob:https://imgur.com/55a89500-e846-4b45-b930-6d6d57ba5fe5)
+![BakkesMod plugin settings](https://i.imgur.com/zBTRQJv.png)
 
 ### Manual Installation
 - Download the `x64/Release/PlaylistRankViewerPlugin.dll` and `plugins/settings/playlistrankviewerplugin.set` files
