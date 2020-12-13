@@ -163,6 +163,10 @@
     <ClCompile Include="bakkesmod-playlist-rank-viewer.cpp" />
     <ClCompile Include="bakkesmod-playlist-rank-viewer.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="RankAndPlaylistData.h" />
+    <ClInclude Include="Enums.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
