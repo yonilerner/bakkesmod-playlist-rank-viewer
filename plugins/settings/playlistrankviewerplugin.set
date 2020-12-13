@@ -1,2 +1,17 @@
 Playlist Rank Viewer
 1|Enable playlist rank viewer|playlist_rank_viewer_enabled
+8 |
+8 |
+9|Toggle settings
+1|Show rank|PRV_show_rank
+1|Show mmr|PRV_show_mmr
+1|Show games played|PRV_show_games_played
+1|Highlight row in tier color|PRV_color_rows
+0|Apply|PRV_apply_settings
+8 |
+8 |
+9|Place your overlay
+5|Background opacity|PRV_background_opacity|0|255
+4|X position|PRV_x_position|0|1.0
+4|Y position|PRV_y_position|0|1.0
+4|Scale|PRV_scale|0.5|3

@@ -18,8 +18,9 @@ public:
 	void writeStats(CanvasWrapper& canvas, UniqueIDWrapper uniqueId, string playerName);
 	void resetMmrCache();
 	void timeoutCallback(GameWrapper* gw);
+	void applySettings();
 
-	map<long long, map<PLAYLIST, string>> playerStats = {};
+	map<long long, map<PLAYLIST, PlayerStatStruct>> playerStats = {};
 	int currentPlayer = 0;
 	shared_ptr<bool> enabled = make_shared<bool>(true);
 };

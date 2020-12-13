@@ -3,8 +3,12 @@
 #include "pch.h"
 #include "Enums.h"
 
+struct Color { int r, g, b; };
+struct PlayerStatStruct { Color color; std::string text; };
+struct RankInfo { Color color; std::string name; };
+
 map<PLAYLIST, string> playlistNames = {
-	{UNRANKED, "Unranked"},
+	{UNRANKED, "Casual"},
 	{SOLO, "Solo"},
 	{TWOS, "Doubles"},
 	{THREES, "Standard"},
@@ -17,54 +21,54 @@ map<PLAYLIST, string> playlistNames = {
 
 array<PLAYLIST, 9> playlistsToCheck = { UNRANKED, SOLO, TWOS, THREES, HOOPS, RUMBLE, DROPSHOT, SNOWDAY, TOURNAMENT };
 
-map<RANK, string> RankTiers = {
-	{SupersonicLegend, "SupersonicLegend"},
-	{GrandChamp3, "GrandChamp3"},
-	{GrandChamp2, "GrandChamp2"},
-	{GrandChamp1, "GrandChamp1"},
-	{Champ3, "Champ3"},
-	{Champ2, "Champ2"},
-	{Champ1, "Champ1"},
-	{Diamond3, "Diamond3"},
-	{Diamond2, "Diamond2"},
-	{Diamond1, "Diamond1"},
-	{Platinum3, "Platinum3"},
-	{Platinum2, "Platinum2"},
-	{Platinum1, "Platinum1"},
-	{Gold3, "Gold3"},
-	{Gold2, "Gold2"},
-	{Gold1, "Gold1"},
-	{Silver3, "Silver3"},
-	{Silver2, "Silver2"},
-	{Silver1, "Silver1"},
-	{Bronze3, "Bronze3"},
-	{Bronze2, "Bronze2"},
-	{Bronze1, "Bronze1"},
-	{Unranked, "Unranked"}
+map<RANK, RankInfo> RankTiers = {
+	{ RANK::Unranked   ,{{ 255, 255, 255 }, "Unranked",}},
+	{ RANK::Bronze1    ,{{ 255, 128, 0 }, "Bronze 1",}},
+	{ RANK::Bronze2    ,{{ 255, 128, 0 }, "Bronze 2",}},
+	{ RANK::Bronze3    ,{{ 255, 128, 0 }, "Bronze 3",}},
+	{ RANK::Silver1    ,{{ 190, 190, 190 }, "Silver 1",}},
+	{ RANK::Silver2    ,{{ 190, 190, 190 }, "Silver 2",}},
+	{ RANK::Silver3    ,{{ 190, 190, 190 }, "Silver 3",}},
+	{ RANK::Gold1      ,{{ 237, 233, 17 }, "Gold 1",}},
+	{ RANK::Gold2      ,{{ 237, 233, 17 }, "Gold 2",}},
+	{ RANK::Gold3      ,{{ 237, 233, 17 }, "Gold 3",}},
+	{ RANK::Platinum1  ,{{ 106, 242, 247 }, "Platinum 1",}},
+	{ RANK::Platinum2  ,{{ 106, 242, 247 }, "Platinum 2",}},
+	{ RANK::Platinum3  ,{{ 106, 242, 247 }, "Platinum 3",}},
+	{ RANK::Diamond1   ,{{ 2, 188, 255 }, "Diamond 1",}},
+	{ RANK::Diamond2   ,{{ 2, 188, 255 }, "Diamond 2",}},
+	{ RANK::Diamond3   ,{{ 2, 188, 255 }, "Diamond 3",}},
+	{ RANK::Champ1     ,{{ 202, 137, 255 }, "Champion 1",}},
+	{ RANK::Champ2     ,{{ 202, 137, 255 }, "Champion 2",}},
+	{ RANK::Champ3     ,{{ 202, 137, 255 }, "Champion 3",}},
+	{ RANK::GrandChamp1 ,{{ 255, 50, 50 }, "Grand Champion 1"}},
+	{ RANK::GrandChamp2 ,{{ 255, 50, 50 }, "Grand Champion 2"}},
+	{ RANK::GrandChamp3 ,{{ 255, 50, 50 }, "Grand Champion 3"}},
+	{ RANK::SupersonicLegend ,{{ 120, 255, 120 }, "Supersonic Legend"}}
 };
 
-map<RANK, string> RankTiersAbrv = {
-	{SupersonicLegend, "SSL"},
-	{GrandChamp3, "GC3"},
-	{GrandChamp2, "GC2"},
-	{GrandChamp1, "GC1"},
-	{Champ3, "C3"},
-	{Champ2, "C2"},
-	{Champ1, "C1"},
-	{Diamond3, "D3"},
-	{Diamond2, "D2"},
-	{Diamond1, "D1"},
-	{Platinum3, "P3"},
-	{Platinum2, "P2"},
-	{Platinum1, "P1"},
-	{Gold3, "G3"},
-	{Gold2, "G2"},
-	{Gold1, "G1"},
-	{Silver3, "S3"},
-	{Silver2, "S2"},
-	{Silver1, "S1"},
-	{Bronze3, "B3"},
-	{Bronze2, "B2"},
-	{Bronze1, "B1"},
-	{Unranked, "Unranked"}
+map<RANK, RankInfo> RankTiersAbrv = {
+	{ RANK::Unranked   ,{{ 255, 255, 255 }, "Unranked",}},
+	{ RANK::Bronze1    ,{{ 255, 128, 0  }, "B1",}},
+	{ RANK::Bronze2    ,{{ 255, 128, 0  }, "B2",}},
+	{ RANK::Bronze3    ,{{ 255, 128, 0  }, "B3",}},
+	{ RANK::Silver1    ,{{ 190, 190, 190 }, "S1",}},
+	{ RANK::Silver2    ,{{ 190, 190, 190 }, "S2",}},
+	{ RANK::Silver3    ,{{ 190, 190, 190 }, "S3",}},
+	{ RANK::Gold1      ,{{ 237, 233, 17  }, "G1",}},
+	{ RANK::Gold2      ,{{ 237, 233, 17  }, "G2",}},
+	{ RANK::Gold3      ,{{ 237, 233, 17  }, "G3",}},
+	{ RANK::Platinum1  ,{{ 106, 242, 247  }, "P1",}},
+	{ RANK::Platinum2  ,{{ 106, 242, 247  }, "P2",}},
+	{ RANK::Platinum3  ,{{ 106, 242, 247  }, "P3",}},
+	{ RANK::Diamond1   ,{{ 2, 188, 255   }, "D1",}},
+	{ RANK::Diamond2   ,{{ 2, 188, 255   }, "D2",}},
+	{ RANK::Diamond3   ,{{ 2, 188, 255   }, "D3",}},
+	{ RANK::Champ1     ,{{ 202, 137, 255 }, "C1",}},
+	{ RANK::Champ2     ,{{ 202, 137, 255 }, "C2",}},
+	{ RANK::Champ3     ,{{ 202, 137, 255 }, "C3",}},
+	{ RANK::GrandChamp1 ,{{ 255, 50, 50  }, "GC1"}},
+	{ RANK::GrandChamp2 ,{{ 255, 50, 50  }, "GC2"}},
+	{ RANK::GrandChamp3 ,{{ 255, 50, 50  }, "GC3"}},
+	{ RANK::SupersonicLegend ,{{ 120, 255, 120 }, "SSL"}}
 };
