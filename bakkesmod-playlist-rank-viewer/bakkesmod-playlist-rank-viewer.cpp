@@ -112,7 +112,7 @@ string GetRankName(int rank, int div) {
 		return "ERROR";
 	} else {
 		RANK realRank = (RANK)(rank);
-		std::string rankName = RankTiersAbrv[realRank].name;
+		std::string rankName = RankTiers[realRank].abbvr;
 
 		if (rank != RANK::Unranked && rank != RANK::SupersonicLegend)
 			rankName += ".D" + to_string(div + 1);
@@ -123,11 +123,11 @@ string GetRankName(int rank, int div) {
 
 Color GetRankColor(int rank) {
 	if (rank < 0 || rank > 22) {
-		return RankTiersAbrv[RANK::Unranked].color;
+		return RankTiers[RANK::Unranked].color;
 	} else {
 		RANK realRank = (RANK)(rank);
 
-		return RankTiersAbrv[realRank].color;
+		return RankTiers[realRank].color;
 	}
 }
 
