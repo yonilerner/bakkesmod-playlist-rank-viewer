@@ -8,27 +8,27 @@ using namespace std;
 
 enum PLAYLIST {
 	UNRANKED = 1, //doesn't always work but will when in game, might take a player swap for it to update to the correct mmr
-	ONES = 10,
+	SOLO = 10,
 	TWOS = 11,
-	SOLO_STANDARD = 12,
 	THREES = 13,
 	HOOPS = 27,
 	RUMBLE = 28,
 	DROPSHOT = 29,
-	SNOWDAY = 30
+	SNOWDAY = 30,
+	TOURNAMENT = 34,
 };
 map<PLAYLIST, string> playlistNames = {
 	{UNRANKED, "Unranked"},
-	{ONES, "Solo"},
+	{SOLO, "Solo"},
 	{TWOS, "Doubles"},
-	{SOLO_STANDARD, "Solo Standard"},
 	{THREES, "Standard"},
 	{HOOPS, "Hoops"},
 	{RUMBLE, "Rumble"},
 	{DROPSHOT, "Dropshot"},
-	{SNOWDAY, "Snowday"}
+	{SNOWDAY, "Snowday"},
+	{TOURNAMENT, "Tournament"}
 };
-array<PLAYLIST, 9> playlistsToCheck = { UNRANKED, ONES, TWOS, THREES, SOLO_STANDARD, HOOPS, RUMBLE, DROPSHOT, SNOWDAY };
+array<PLAYLIST, 9> playlistsToCheck = { UNRANKED, SOLO, TWOS, THREES, HOOPS, RUMBLE, DROPSHOT, SNOWDAY, TOURNAMENT };
 
 class PlaylistRankViewer : public BakkesMod::Plugin::BakkesModPlugin {
 public:
@@ -40,8 +40,8 @@ public:
 
 	void log(string str);
 	void render(CanvasWrapper canvas);
-	void updatePlayerMmr(SteamID id);
-	void writeStats(CanvasWrapper& canvas, long long uniqueId, string playerName);
+	void updatePlayerMmr(UniqueIDWrapper uniqueId);
+	void writeStats(CanvasWrapper& canvas, UniqueIDWrapper uniqueId, string playerName);
 	void resetMmrCache();
 	void timeoutCallback(GameWrapper* gw);
 
