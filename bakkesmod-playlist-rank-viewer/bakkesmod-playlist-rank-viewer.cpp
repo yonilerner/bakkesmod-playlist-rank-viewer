@@ -186,7 +186,7 @@ void PlaylistRankViewer::writeStats(CanvasWrapper& canvas, UniqueIDWrapper uniqu
 	};
 	Vector2 sizeBox = {
 		int(255 * PRV_scale),
-		int(int(35 + (20 * playlistsToCheck.size())) * PRV_scale)
+		int(int(40 + (20 * playlistsToCheck.size())) * PRV_scale)
 	};
 	Vector2 textPos = { int(drawLoc.X + 15), int(drawLoc.Y + 10) };
 
