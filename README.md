@@ -7,7 +7,7 @@ PlaylistRankViewer plugin for BakkesMod (https://bakkesplugins.com/plugins/view/
 This plugin allows you to see the rank, MMR, and # of matches played by playlist for each player in the current session. 
 
 ### Usage  
-Make sure that the plugin is enabled. Press F2 to open up the bakkes mod settings. Navigate to the settings tab, and click the check box for enabled under "PlaylistRankViewer".  Open the settings in BakkseMod to turn on/off data. Use the sliders to adjust size and location of the plugin on screen.
+Make sure that the plugin is enabled. Press F2 to open up the bakkes mod settings. Navigate to the settings tab, and click the check box for enabled under "PlaylistRankViewer". Open the settings in BakkseMod to turn on/off data. Use the sliders to adjust size and location of the plugin on screen. 
 
 ### Keyboard shortcuts
 - `LeftShift + N` toggles the plugin
@@ -27,7 +27,7 @@ Example showing each tier highlight color:
 ![playlist rank tier highlights](https://i.imgur.com/q0ZbMqH.png)
 
 Settings menu  
-![BakkesMod plugin settings](https://i.imgur.com/zBTRQJv.png)
+![BakkesMod plugin settings](https://i.imgur.com/79AedJM.png)
 
 ### Manual Installation
 - Download the `x64/Release/PlaylistRankViewerPlugin.dll` and `plugins/settings/playlistrankviewerplugin.set` files
