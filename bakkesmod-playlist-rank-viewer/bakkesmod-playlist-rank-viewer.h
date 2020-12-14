@@ -13,14 +13,17 @@ public:
 	virtual void onUnload();
 
 	bool isEnabled();
-	void setEnabled(bool enabled);
 
+	void setEnabled(bool enabled);
 	void log(string str);
 	void render(CanvasWrapper canvas);
 	void updatePlayerStats(UniqueIDWrapper uniqueId);
-	void writeStats(CanvasWrapper& canvas, UniqueIDWrapper uniqueId, string playerName);
+	void writeStats(CanvasWrapper& canvas, UniqueIDWrapper uniqueId, string playerName, int teamNum);
 	void resetMmrCache();
-	void timeoutCallback(GameWrapper* gw);
+	void resetMmrCacheTimeoutCallback(GameWrapper* gw);
+	void autoCycleTimeoutCallback(GameWrapper* gw);
+	void startCycleTimeout();
+	void nextPlayer();
 	void applySettings();
 
 	map<long long, map<PLAYLIST, PlayerStatStruct>> playerStats = {};
