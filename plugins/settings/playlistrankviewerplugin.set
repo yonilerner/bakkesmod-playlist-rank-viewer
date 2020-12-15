@@ -7,6 +7,8 @@ Playlist Rank Viewer
 1|Show mmr|PRV_show_mmr
 1|Show games played|PRV_show_games_played
 1|Highlight row in tier color|PRV_color_rows
+1|Enable auto cycle|PRV_auto_cycle_enabled
+5|Auto cycle time|PRV_auto_cycle_timeout|1|30
 0|Apply|PRV_apply_settings
 8 |
 8 |

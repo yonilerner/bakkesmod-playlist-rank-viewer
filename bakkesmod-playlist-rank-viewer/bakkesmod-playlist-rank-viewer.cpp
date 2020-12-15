@@ -14,6 +14,7 @@ string enabledBinding = "LeftShift+N";
 string nextPlayerName = prefix + "next_player";
 string nextPlayerBinding = "N";
 
+string autoCycleBinding = "LeftShift+M";
 
 void PlaylistRankViewer::log(std::string str) {
 	cvarManager->log(str);
@@ -29,28 +30,55 @@ void PlaylistRankViewer::onLoad() {
 			}
 		});
 
-	// Apparently this wont run unless it happens a bit later
-	gameWrapper->SetTimeout([self = this](GameWrapper *gw) {
-		self->log("enabled: " + to_string(self->cvarManager->getCvar(enabledName).getBoolValue()));
-		if (self->cvarManager->getCvar(enabledName).getBoolValue()) {
-			self->setEnabled(true);
-		}
-	}, 5);
+	cvarManager->registerCvar("PRV_auto_cycle_enabled", "0", "Auto cycle player", true, true, 0, true, 1, true)
+		.addOnValueChanged([self = this](string oldValue, CVarWrapper cvar) {
+			if (cvar.getBoolValue()) {
+				self->startCycleTimeout();
+			}
+		});
 
+	cvarManager->registerCvar("PRV_show_rank", "1", "Show rank", true, true, 0, true, 1, true);
+	cvarManager->registerCvar("PRV_show_mmr", "1", "Show mmr", true, true, 0, true, 1, true);
+	cvarManager->registerCvar("PRV_show_games_played", "1", "Show games played", true, true, 0, true, 1, true);
+	cvarManager->registerCvar("PRV_color_rows", "1", "Highlight rows", true, true, 0, true, 1, true);
+	cvarManager->registerCvar("PRV_background_opacity", "200", "Background opacity", true, true, 0, true, 255, true);
+	cvarManager->registerCvar("PRV_x_position", "0.800", "Overlay X position", true, true, 0, true, 1.0f, true);
+	cvarManager->registerCvar("PRV_y_position", "0.080", "Overlay Y position", true, true, 0, true, 1.0f, true);
+	cvarManager->registerCvar("PRV_scale", "1", "Overlay scale", true, true, 0.5, true, 3, true);
+	cvarManager->registerCvar("PRV_auto_cycle_timeout", "4", "Auto cycle timeout", true, true, 1, true, 30, true);
+
+	cvarManager->setBind(enabledBinding, enabledName);
+	cvarManager->setBind(nextPlayerBinding, nextPlayerName);
+	cvarManager->setBind(autoCycleBinding, "PRV_auto_cycle_enabled");
+
+	// Toggle plugin (used for keybinding)
 	cvarManager->registerNotifier(enabledName, [self = this](vector<string>) {
 		self->setEnabled(!self->isEnabled());
 		self->cvarManager->getCvar(enabledName).setValue(self->isEnabled());
 	}, "Toggle plugin", PERMISSION_ALL);
-	
-	cvarManager->registerCvar("PRV_show_rank", "1", "Show rank", true, true, 0, true, 1);
-	cvarManager->registerCvar("PRV_show_mmr", "1", "Show mmr", true, true, 0, true, 1);
-	cvarManager->registerCvar("PRV_show_games_played", "1", "Show games played", true, true, 0, true, 1);
-	cvarManager->registerCvar("PRV_color_rows", "1", "Highlight rows", true, true, 0, true, 1);
-	cvarManager->registerCvar("PRV_background_opacity", "200", "Background opacity", true, true, 0, true, 255);
-	cvarManager->registerCvar("PRV_x_position", "0.800", "Overlay X position", true, true, 0, true, 1.0f);
-	cvarManager->registerCvar("PRV_y_position", "0.080", "Overlay Y position", true, true, 0, true, 1.0f);
-	cvarManager->registerCvar("PRV_scale", "1", "Overlay scale", true, true, 0.5, true, 3);
 
+	/*
+	// Toggle auto cycle (used for keybinding)
+	cvarManager->registerNotifier("PRV_auto_cycle_enabled", [self = this](vector<string>) {
+		bool isEnabled = self->cvarManager->getCvar("PRV_auto_cycle_enabled").getBoolValue();
+		/*
+		* For some reason setting the Cvar right here reverses the stored value when the game first loads
+		* all other uses of this work fine except for on first game load
+		* not sure how to go about fixing this. 
+		* /
+		self->cvarManager->getCvar("PRV_auto_cycle_enabled").setValue(!isEnabled);
+	}, "Toggle auto cycle", PERMISSION_ALL);
+	*/
+
+	// Show next player (used for keybinding);
+	cvarManager->registerNotifier(
+		nextPlayerName,
+		[this](std::vector<std::string> params) { nextPlayer(); },
+		"View next player in the match",
+		PERMISSION_ONLINE
+	);
+
+	// Apply settings button
 	cvarManager->registerNotifier(
 		"PRV_apply_settings",
 		[this](std::vector<std::string> params) { applySettings(); },
@@ -58,40 +86,56 @@ void PlaylistRankViewer::onLoad() {
 		PERMISSION_ALL
 	);
 
-	cvarManager->setBind(enabledBinding, enabledName);
-	cvarManager->setBind(nextPlayerBinding, nextPlayerName);
-
 	gameWrapper->RegisterDrawable(std::bind(&PlaylistRankViewer::render, this, placeholders::_1));
-	
-	// Show the next users MMR stats
-	cvarManager->registerNotifier(nextPlayerName, [self = this](vector<string>) {
-		if (!self->isEnabled()) {
-			return;
+
+	// Apparently this wont run unless it happens a bit later
+	gameWrapper->SetTimeout([self = this](GameWrapper* gw) {
+		self->log("enabled: " + to_string(self->cvarManager->getCvar(enabledName).getBoolValue()));
+		if (self->cvarManager->getCvar(enabledName).getBoolValue()) {
+			self->setEnabled(true);
 		}
-		ServerWrapper server = self->gameWrapper->GetOnlineGame();
-		if (!server.IsNull()) {
-			self->log("player is " + to_string(self->currentPlayer) + ", total players: " + to_string(server.GetPRIs().Count()));
-			if (self->currentPlayer + 1 >= server.GetPRIs().Count()) {
-				self->currentPlayer = 0;
-			}
-			else {
-				self->currentPlayer++;
-			}
-			self->log("player is now " + to_string(self->currentPlayer));
-		}
-	}, "View next player in the match", PERMISSION_ONLINE);
+	}, 1);
 
 	gameWrapper->SetTimeout([self = this](GameWrapper *gw) {
-		self->timeoutCallback(gw);
+		self->resetMmrCacheTimeoutCallback(gw);
 	}, 0);
 }
 
-float callbackEvery = 30;
-void PlaylistRankViewer::timeoutCallback(GameWrapper* _) {
+void PlaylistRankViewer::resetMmrCacheTimeoutCallback(GameWrapper* _) {
 	this->resetMmrCache();
+
 	gameWrapper->SetTimeout([self = this](GameWrapper *gw) {
-		self->timeoutCallback(gw);
-	}, callbackEvery);
+		self->resetMmrCacheTimeoutCallback(gw);
+	}, 30);
+}
+
+void PlaylistRankViewer::autoCycleTimeoutCallback(GameWrapper* _) {
+	if (cvarManager->getCvar("PRV_auto_cycle_enabled").getBoolValue()) {
+		this->nextPlayer();
+
+		gameWrapper->SetTimeout([self = this](GameWrapper* gw) {
+			self->autoCycleTimeoutCallback(gw);
+		}, cvarManager->getCvar("PRV_auto_cycle_timeout").getIntValue());
+	}
+}
+
+void PlaylistRankViewer::nextPlayer() {
+	if (!isEnabled()) {
+		return;
+	}
+
+	ServerWrapper server = gameWrapper->GetOnlineGame();
+
+	if (!server.IsNull()) {
+		this->log("player is " + to_string(this->currentPlayer) + ", total players: " + to_string(server.GetPRIs().Count()));
+		if (this->currentPlayer + 1 >= server.GetPRIs().Count()) {
+			this->currentPlayer = 0;
+		} else {
+			this->currentPlayer++;
+		}
+
+		this->log("player is now " + to_string(this->currentPlayer));
+	}
 }
 
 void PlaylistRankViewer::onUnload() {
@@ -169,7 +213,7 @@ void PlaylistRankViewer::updatePlayerStats(UniqueIDWrapper uniqueId) {
 	}
 }
 
-void PlaylistRankViewer::writeStats(CanvasWrapper& canvas, UniqueIDWrapper uniqueId, string playerName) {
+void PlaylistRankViewer::writeStats(CanvasWrapper& canvas, UniqueIDWrapper uniqueId, string playerName, int teamNum) {
 	float PRV_x_position = cvarManager->getCvar("PRV_x_position").getFloatValue();
 	float PRV_y_position = cvarManager->getCvar("PRV_y_position").getFloatValue();
 	float PRV_scale = cvarManager->getCvar("PRV_scale").getFloatValue();
@@ -194,8 +238,17 @@ void PlaylistRankViewer::writeStats(CanvasWrapper& canvas, UniqueIDWrapper uniqu
 	canvas.SetColor(0, 0, 0, PRV_background_opacity);
 	canvas.FillBox(sizeBox);
 
-	// First draw the players name at the top
+	// First draw the players name at the 
 	canvas.SetColor(255, 255, 255, 255);
+
+	if (teamNum == 0) {
+		// Blue team
+		canvas.SetColor(2, 188, 255, 255);
+	} else if (teamNum == 1) {
+		// Orange team
+		canvas.SetColor(255, 128, 0, 255);
+	}
+
 	canvas.SetPosition(textPos);
 	canvas.DrawString(playerName, PRV_scale, PRV_scale);
 
@@ -233,12 +286,12 @@ void PlaylistRankViewer::render(CanvasWrapper canvas) {
 			// Write the stats of the current player
 			if (currentPlayer >= 0 && currentPlayer < server.GetPRIs().Count()) {
 				PriWrapper pri = server.GetPRIs().Get(currentPlayer);
-				writeStats(canvas, pri.GetUniqueIdWrapper(), pri.GetPlayerName().ToString());
+				writeStats(canvas, pri.GetUniqueIdWrapper(), pri.GetPlayerName().ToString(), pri.GetTeamNum());
 			}
 		}
 	}
 	else {
-		writeStats(canvas, gameWrapper->GetUniqueID(), "You");
+		writeStats(canvas, gameWrapper->GetUniqueID(), "You", -1);
 	}
 }
 
@@ -258,4 +311,10 @@ void PlaylistRankViewer::setEnabled(bool enabled) {
 
 void PlaylistRankViewer::applySettings() {
 	this->resetMmrCache();
+}
+
+void PlaylistRankViewer::startCycleTimeout() {
+	gameWrapper->SetTimeout([self = this](GameWrapper* gw) {
+		self->autoCycleTimeoutCallback(gw);
+	}, cvarManager->getCvar("PRV_auto_cycle_timeout").getIntValue());
 }
